@@ -1,0 +1,15 @@
+.btn,
+button[type="submit"],
+input[type="submit"],
+input[type="radio"],
+input[type="image"] {
+	> a {
+		color: #fff;
+	}
+	&:focus,
+	&.focus {
+	    @include component-outline();
+	    box-shadow: none !important;
+	    transition: none !important;
+	}
+}
