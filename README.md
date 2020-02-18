@@ -1,11 +1,11 @@
-= Pearson Grid course format
+# Pearson Grid course format
 
 This is a setting within the culcourse course format to turn on a
 different course display. Pearson are advocating a particular course
 design that is intended to lead a student through the course material
 in a structured way.
 
-== Course design
+## Course design
 
 The Pearson Grid course format expects a specific course structure to
 display correctly.
