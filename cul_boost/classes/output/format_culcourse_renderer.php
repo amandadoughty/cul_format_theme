@@ -88,6 +88,79 @@ class theme_cul_boost_format_culcourse_renderer extends format_culcourse_rendere
 	}
 
     /**
+     * Output the html for the main course home page as a grid
+     *
+     * @param stdClass $course The course entry from DB
+     * @param array $sections (argument not used)
+     * @param array $mods (argument not used)
+     * @param array $modnames (argument not used)
+     * @param array $modnamesused (argument not used)
+     */
+    protected function print_pearson_grid($course, $sections, $mods, $modnames, $modnamesused) {
+        $modinfo = get_fast_modinfo($course);
+        $course = course_get_format($course)->get_course();
+
+        $context = context_course::instance($course->id);
+        // Title with completion help icon.
+        $completioninfo = new completion_info($course);
+        echo $completioninfo->display_help_icon();
+        echo $this->output->heading($this->page_title(), 2, 'accesshide');
+
+        // Copy activity clipboard..
+        echo $this->course_activity_clipboard($course, 0);
+        $numsections = course_get_format($course)->get_last_section_number();
+
+        $sections = $modinfo->get_section_info_all();
+        $thissection = array_shift($sections);
+        // $thissection is currently section-0 which is handled specially.
+        if ($thissection->summary or !empty($modinfo->sections[0]) or $this->page->user_is_editing()) {
+            // Since we are not using ul, replace the li that section_header
+            // outputs with div
+            echo str_replace('<li', '<div', $this->section_header($thissection, $course, false, 0));
+
+            echo html_writer::start_tag('div', ['class'=>'topsection-wrap d-flex flex-wrap align-items-stretch']);
+
+            $title = get_section_name($course, 0);
+            $sectionsummary = $this->output->heading($title, 3, 'section-title');
+            $sectionsummary .= $this->section_summary_container($thissection);
+            $class = '';
+
+            $sectioncm = $this->courserenderer->course_section_cm_list($course, $thissection, 0);
+
+            echo html_writer::tag('div', $sectionsummary, ['class'=>'course-summary col p-3 bg-light']);
+            echo html_writer::tag('div', $sectioncm, ['class'=>'col-12 '.$class.' px-3 pb-3 bg-light']);
+
+            echo html_writer::end_tag('div');
+
+            echo $this->courserenderer->course_section_add_cm_control($course, 0, 0);
+
+            // Since we are not using ul, replace the /li that
+            // injected_section_footer outputs with /div
+            echo str_replace('</li>', '</div>', $this->injected_section_footer($course, 0, $context, $thissection, false));
+        }
+        // Render as a ul, using css to turn into a responsive grid
+        echo html_writer::start_tag('div', array('class' => 'weeks-holder'));
+        echo html_writer::start_tag('div', array('class' => 'weeks-layout'));
+        echo html_writer::start_tag('h3', array('class' => 'sectionnamex'));
+        echo get_string('weeks', 'format_culcourse');
+        $journalsurl = new moodle_url('/mod/journal/index.php', array('id' => $course->id));
+        echo html_writer::start_tag('span', array('class' => 'pucl-journals-link float-right'));
+        echo html_writer::start_tag('a', array('href' => $journalsurl->out(), 'alt' => get_string('journalslist', 'format_culcourse')));
+        echo html_writer::img($this->output->image_url('JournalWhite', 'format_culcourse'), '');
+        echo html_writer::end_tag('a');
+        echo html_writer::end_tag('span');
+        echo html_writer::end_tag('h3');
+        echo html_writer::start_tag('ul');
+        foreach ($sections as $thissection) {
+            echo $this->section_summary($thissection, $course, null);
+        }
+        echo html_writer::end_tag('ul');
+        echo html_writer::end_tag('div');
+        echo html_writer::end_tag('div');
+        echo $this->end_section_list();
+    }
+
+    /**
      * Output the html for a multiple section page
      *
      * @param stdClass $course The course entry from DB
@@ -97,6 +170,10 @@ class theme_cul_boost_format_culcourse_renderer extends format_culcourse_rendere
      * @param array $modnamesused (argument not used)
      */
     public function print_multiple_section_page($course, $sections, $mods, $modnames, $modnamesused) {
+        if (!$this->page->user_is_editing() and $this->culconfig['usepearsoncourseformat'] == 2) {
+            $this->print_pearson_grid($course, $sections, $mods, $modnames, $modnamesused);
+            return;
+        }
 
         $modinfo = get_fast_modinfo($course);
         $course = course_get_format($course)->get_course();

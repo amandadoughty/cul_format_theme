@@ -42,6 +42,15 @@ $string['showsectionsummary_help'] = 'States if the section summary will be show
 $string['defaultshowsectionsummary'] = 'Show the section summary';
 $string['defaultshowsectionsummary_desc'] = 'States if the section summary will be shown.';
 
+// Pearson course format
+$string['usepearsoncourseformat'] = 'Use Pearson course format';
+$string['usepearsoncourseformat_desc'] = 'This setting specifies whether to use the Pearson course format or the default.';
+$string['usepearsoncourseformat_help'] = 'This setting specifies whether to use the Pearson course format or the default.';
+$string['defaultusepearsoncourseformat'] = 'Use Pearson course format';
+$string['defaultusepearsoncourseformat_desc'] = 'This setting specifies whether to use the Pearson course format or the default.';
+$string['weeks'] = 'Weeks';
+$string['journalslist'] = 'List of Journals in this course';
+
 $string['defaultblocks'] = 'Default blocks';
 $string['defaultblocks_desc'] = 'Default blocks to include in new course. String should be in the format \'block1,block2\'';
 

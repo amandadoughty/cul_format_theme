@@ -55,6 +55,19 @@ $choices = [
 ];
 $settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
 
+// Use Pearson course format layout
+// 1 => No.
+// 2 => Yes.
+$name = 'format_culcourse/defaultusepearsoncourseformat';
+$title = get_string('defaultusepearsoncourseformat', 'format_culcourse');
+$description = get_string('defaultusepearsoncourseformat_desc', 'format_culcourse');
+$default = 1;
+$choices = [
+    1 => new lang_string('no'),
+    2 => new lang_string('yes')
+];
+$settings->add(new admin_setting_configselect($name, $title, $description, $default, $choices));
+
 /* Default blocks.
 */
 $name = 'format_culcourse/defaultblocks_culcourse';

@@ -65,7 +65,7 @@ function format_culcourse_get_external_urls_data($course) {
     $update = true;
 
     if ($record) {
-        if ($record->timemodified > $today) {
+//        if ($record->timemodified > $today) {
             // If the last save came back with an error then call the api's again.
             // Check timetable firstas that is most flaky.
             $data = json_decode($record->data, true);
@@ -75,7 +75,7 @@ function format_culcourse_get_external_urls_data($course) {
                 $update = false;
                 return $data;
             }
-        }
+//        }
     }
 
     // Get the data.

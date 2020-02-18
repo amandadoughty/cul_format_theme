@@ -208,6 +208,114 @@ body.format-culcourse.editing .course-content .dash-panel .linkscontainer ul.lin
   .format-culcourse.path-format-culcourse-photos .overlay,
   .format-culcourse.path-format-culcourse-photos #page-footer {
     display: none !important; } }
+body.format-culcourse .weeks-layout {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 10px; }
+  body.format-culcourse .weeks-layout .sectionnamex {
+    color: white;
+    margin-left: 10px; }
+  body.format-culcourse .weeks-layout table.table td .section {
+    background-color: white; }
+  body.format-culcourse .weeks-layout table.table td a:hover .section {
+    border: 1px solid red; }
+  body.format-culcourse .weeks-layout .section-title {
+    text-align: center; }
+    body.format-culcourse .weeks-layout .section-title a {
+      color: #3c3c3c; }
+  body.format-culcourse .weeks-layout .section .content {
+    position: relative;
+    height: 100px; }
+    body.format-culcourse .weeks-layout .section .content .section-summary-activities {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      height: 20px; }
+  body.format-culcourse .weeks-layout .activity-count i {
+    font-size: 25px;
+    vertical-align: sub; }
+  body.format-culcourse .weeks-layout > ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-gap: 1rem;
+    padding-left: 0px; }
+    body.format-culcourse .weeks-layout > ul li {
+      margin: 5px;
+      background-color: white; }
+      body.format-culcourse .weeks-layout > ul li .section-summary-activities {
+        display: none; }
+      body.format-culcourse .weeks-layout > ul li .section-summary-progress {
+        padding-top: 1rem;
+        text-align: center; }
+  body.format-culcourse .weeks-layout .section-summary .section-title {
+    margin-top: 40px; }
+body.format-culcourse .weeks-holder, body.format-culcourse .single-section {
+  background-image: linear-gradient(to bottom right, #8e232d, #a22833);
+  padding-bottom: 10px; }
+body.format-culcourse .contentsblock {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 800px; }
+body.format-culcourse .single-section .navigationtitle .sectionname {
+  font-size: xx-large;
+  font-weight: 800;
+  color: white; }
+body.format-culcourse .pucl-weeks-back-link {
+  color: white;
+  font-size: large;
+  font-weight: 800; }
+  body.format-culcourse .pucl-weeks-back-link a {
+    color: white; }
+body.format-culcourse ul.pucl-topic-level, body.format-culcourse ul.pucl-collection-parts-level, body.format-culcourse ul.pucl-parts-level {
+  list-style: none;
+  padding: 0; }
+body.format-culcourse .pucl-topic-heading {
+  font-size: large;
+  font-weight: 800;
+  background-color: white;
+  color: #3c3c3c;
+  margin: 10px 0px;
+  padding: 10px; }
+  body.format-culcourse .pucl-topic-heading i {
+    color: #a22833; }
+body.format-culcourse .pucl-collection-parts-heading {
+  font-size: large;
+  font-weight: 800;
+  color: white;
+  border-bottom: 1px solid white;
+  padding: 10px 10px 5px 0px;
+  margin-bottom: 10px;
+  margin-left: 50px; }
+body.format-culcourse ul.pucl-parts-level {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  grid-gap: 1rem;
+  padding-left: 0px;
+  width: auto;
+  overflow: hidden;
+  margin-left: 50px; }
+body.format-culcourse li.pucl-part {
+  float: left;
+  display: inline;
+  width: auto;
+  background-color: white;
+  color: #3c3c3c;
+  margin-right: 10px;
+  padding: 10px; }
+  body.format-culcourse li.pucl-part a {
+    color: #3c3c3c; }
+body.format-culcourse .pucl-part-box .activityicon {
+  display: none; }
+body.format-culcourse .pucl-part-box .autocompletion {
+  float: right; }
+body.format-culcourse .pucl-part-box .instancename {
+  font-size: large;
+  font-weight: 800; }
+body.format-culcourse .pucl-part-box form {
+  display: inline-block;
+  float: right; }
+
 body.format-culcourse .course-content ul.culcourse li.section,
 body.format-culcourse .course-content ul.culcourse li#toggle-all {
   margin: 4px 1px 1px 1px;

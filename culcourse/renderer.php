@@ -621,6 +621,10 @@ class format_culcourse_renderer extends format_section_renderer_base {
      * @param array $modnamesused (argument not used)
      */
     public function print_multiple_section_page($course, $sections, $mods, $modnames, $modnamesused) {
+        if ($this->culconfig['usepearsoncourseformat'] == 2) {
+	    print_pearson_grid($course, $sections, $mods, $modname, $modnamesused);
+	    return;
+	}
 
         $modinfo = get_fast_modinfo($course);
         $course = course_get_format($course)->get_course();
@@ -720,6 +724,175 @@ class format_culcourse_renderer extends format_section_renderer_base {
     }
 
     /**
+     * Output the html for a single section page .
+     *
+     * @param stdClass $course The course entry from DB
+     * @param array $sections (argument not used)
+     * @param array $mods (argument not used)
+     * @param array $modnames (argument not used)
+     * @param array $modnamesused (argument not used)
+     * @param int $displaysection The section number in the course which is being displayed
+     */
+    public function print_single_section_page($course, $sections, $mods, $modnames, $modnamesused, $displaysection) {
+        global $PAGE;
+        if ($this->culconfig['usepearsoncourseformat'] == 1
+            || $this->page->user_is_editing()) {
+            parent::print_single_section_page($course, $sections, $mods, $modnames, $modnamesused, $displaysection);
+            return;
+        }
+
+        $modinfo = get_fast_modinfo($course);
+        $course = course_get_format($course)->get_course();
+
+        // Can we view the section in question?
+        if (!($sectioninfo = $modinfo->get_section_info($displaysection)) || !$sectioninfo->uservisible) {
+            // This section doesn't exist or is not available for the user.
+            // We actually already check this in course/view.php but just in case exit from this function as well.
+            print_error('unknowncoursesection', 'error', course_get_url($course),
+                format_string($course->fullname));
+        }
+
+        // Copy activity clipboard..
+        echo $this->course_activity_clipboard($course, $displaysection);
+
+        // Start single-section div
+        echo html_writer::start_tag('div', array('class' => 'single-section'));
+
+        // And another div for centering purposes
+        echo html_writer::start_tag('div', array('class' => 'contentsblock'));
+
+        // The requested section page.
+        $thissection = $modinfo->get_section_info($displaysection);
+
+        // Title with section navigation links.
+        $sectionnavlinks = $this->get_nav_links($course, $modinfo->get_section_info_all(), $displaysection);
+        $sectiontitle = '';
+        $sectiontitle .= html_writer::start_tag('div', array('class' => 'section-navigation navigationtitle'));
+        $courseurl = new moodle_url('/course/view.php', array('id' => $course->id));
+        $sectiontitle .= html_writer::start_tag('span', array('class' => 'pucl-weeks-back-link mdl-left'));
+        $sectiontitle .= html_writer::tag('a', '&lt; '.get_string('weeks', 'format_culcourse'), array('href' => $courseurl->out(), 'alt' => 'Back to weeks page'));
+        $sectiontitle .= html_writer::end_tag('span');
+        $journalsurl = new moodle_url('/mod/journal/index.php', array('id' => $course->id));
+        $sectiontitle .= html_writer::start_tag('span', array('class' => 'pucl-journals-link mdl-right'));
+        $sectiontitle .= html_writer::start_tag('a', array('href' => $journalsurl->out(), 'alt' => get_string('journalslist', 'format_culcourse')));
+        $sectiontitle .= html_writer::img($this->output->image_url('JournalWhite', 'format_culcourse'), '');
+        $sectiontitle .= html_writer::end_tag('a');
+        $sectiontitle .= html_writer::end_tag('span');
+
+        // Title attributes
+        $classes = 'sectionname';
+        if (!$thissection->visible) {
+            $classes .= ' dimmed_text';
+        }
+        $sectionname = html_writer::tag('span', $this->section_title_without_link($thissection, $course));
+        $sectiontitle .= $this->output->heading($sectionname, 3, $classes);
+
+        $sectiontitle .= html_writer::end_tag('div');
+        echo $sectiontitle;
+
+        // Layout a section
+        if (!empty($modinfo->sections[$thissection->section])) {
+            $currentlevel = -1;
+            echo html_writer::start_tag('ul', array('class' => 'pucl-topic-level'));
+            $nummods = count($modinfo->sections[$thissection->section]);
+            for ($i = 0; $i < $nummods;) {
+                $mod = $modinfo->cms[$modinfo->sections[$thissection->section][$i]];
+                if ($mod->indent != 0) { break; }
+                $i = $this->print_topic($course, $modinfo, $thissection, $i, $nummods);
+            }
+            echo html_writer::end_tag('ul');
+        }
+        // Close contents block div
+        echo html_writer::end_tag('div');
+        // Close single-section div.
+        echo html_writer::end_tag('div');
+        // Output toggle jquery
+        echo html_writer::script('$(\'.pucl-toggle\').click(function(e) {
+            e.preventDefault();
+            var $this = $(this);
+            if ($this.next().hasClass(\'show\')) {
+                $this.next().removeClass(\'show\');
+                $this.next().slideUp(350);
+                $this.find(\'i\').removeClass(\'fa-chevron-up\').addClass(\'fa-chevron-down\');
+            } else {
+                $this.parent().parent().find(\'li .pucl-collection-parts-level\').removeClass(\'show\');
+                $this.parent().parent().find(\'li .pucl-collection-parts-level\').slideUp(350);
+                $this.parent().parent().find(\'li .pucl-collection-parts-level\').prev().find(\'i\').removeClass(\'fa-chevron-up\').addClass(\'fa-chevron-down\');
+                $this.next().toggleClass(\'show\');
+                $this.next().slideToggle(350);
+                $this.find(\'i\').removeClass(\'fa-chevron-down\').addClass(\'fa-chevron-up\');
+            }
+        });');
+    }
+
+    protected function print_topic($course, $modinfo, $section, $i, $nummods) {
+        $mod = $modinfo->cms[$modinfo->sections[$section->section][$i]];
+        echo html_writer::start_tag('li', array('class' => 'pucl-topic'));
+        // Output topic heading
+        echo html_writer::start_tag('a', array('class' => 'pucl-toggle'));
+        echo html_writer::start_tag('div', array('class' => 'pucl-topic-heading'));
+        if ($i === 0) {
+            echo '<i class="fa fa-chevron-up" aria-hidden="true"></i>&nbsp;';
+        } else {
+            echo '<i class="fa fa-chevron-down" aria-hidden="true"></i>&nbsp;';
+        }
+        echo $mod->name;
+        echo html_writer::end_tag('div');
+        echo html_writer::end_tag('a');
+        // Start prep for next level
+        if ($i === 0) {
+            echo html_writer::start_tag('ul', array('class' => 'pucl-collection-parts-level show'));
+        } else {
+            echo html_writer::start_tag('ul', array('class' => 'pucl-collection-parts-level', 'style' => 'display: none;'));
+        }
+        $i++;
+        for (;$i < $nummods; ) {
+            $mod = $modinfo->cms[$modinfo->sections[$section->section][$i]];
+            if ($mod->indent != 1) { break; }
+            $i = $this->print_parts($course, $modinfo, $section, $i, $nummods);
+        }
+        echo html_writer::end_tag('ul');
+        echo html_writer::end_tag('li');
+        return $i;
+    }
+
+    protected function print_parts($course, $modinfo, $section, $i, $nummods) {
+        $mod = $modinfo->cms[$modinfo->sections[$section->section][$i]];
+        echo html_writer::start_tag('li', array('class' => 'pucl-collection-parts'));
+        // Output collection of parts heading
+        echo html_writer::start_tag('div', array('class' => 'pucl-collection-parts-heading'));
+        echo $mod->name;
+        echo html_writer::end_tag('div');
+        // Start prep for next level
+        echo html_writer::start_tag('ul', array('class' => 'pucl-parts-level'));
+        $i++;
+        for (;$i < $nummods; ) {
+            $mod = $modinfo->cms[$modinfo->sections[$section->section][$i]];
+            if ($mod->indent != 2) { break; }
+            $i = $this->print_parts_contents($course, $modinfo, $section, $i, $nummods);
+        }
+        echo html_writer::end_tag('ul');
+        echo html_writer::end_tag('li');
+        return $i;
+    }
+
+    protected function print_parts_contents($course, $modinfo, $section, $i, $nummods) {
+        $mod = $modinfo->cms[$modinfo->sections[$section->section][$i]];
+        if ($mod->indent != 2) { return $i; }
+
+        $completioninfo = new completion_info($course);
+
+        echo html_writer::start_tag('li', array('class' => 'pucl-part'));
+        echo html_writer::start_tag('div', array('class' => 'pucl-part-box'));
+        echo $this->courserenderer->course_section_cm_name($mod, array());
+        echo $this->courserenderer->course_section_cm_completion($course, $completioninfo, $mod, array());
+        echo html_writer::end_tag('div');
+        echo html_writer::end_tag('li');
+
+        return $i+1;
+    }
+
+/**
      * Returns button to insert section.
      *
      * @param stdClass $course
@@ -886,5 +1059,81 @@ class format_culcourse_renderer extends format_section_renderer_base {
         $o .= html_writer::end_tag('li');
 
         return $o;
+    }
+
+    /**
+     * Output the html for the main course home page as a grid
+     *
+     * @param stdClass $course The course entry from DB
+     * @param array $sections (argument not used)
+     * @param array $mods (argument not used)
+     * @param array $modnames (argument not used)
+     * @param array $modnamesused (argument not used)
+     */
+    protected function print_pearson_grid($course, $sections, $mods, $modnames, $modnamesused) {
+        $modinfo = get_fast_modinfo($course);
+        $course = course_get_format($course)->get_course();
+
+        $context = context_course::instance($course->id);
+        // Title with completion help icon.
+        $completioninfo = new completion_info($course);
+        echo $completioninfo->display_help_icon();
+        echo $this->output->heading($this->page_title(), 2, 'accesshide');
+
+        // Copy activity clipboard..
+        echo $this->course_activity_clipboard($course, 0);
+        $numsections = course_get_format($course)->get_last_section_number();
+
+        // Now the dashboard.
+        echo $this->build_dashboard();
+
+        $sections = $modinfo->get_section_info_all();
+        $thissection = array_shift($sections);
+        // $thissection is currently section-0 which is handled specially.
+        if ($thissection->summary or !empty($modinfo->sections[0]) or $this->page->user_is_editing()) {
+            // Since we are not using ul, replace the li that section_header
+            // outputs with div
+            echo str_replace('<li', '<div', $this->section_header($thissection, $course, false, 0));
+
+            echo html_writer::start_tag('div', ['class'=>'topsection-wrap d-flex flex-wrap align-items-stretch']);
+
+            $title = get_section_name($course, 0);
+            $sectionsummary = $this->output->heading($title, 3, 'section-title');
+            $sectionsummary .= $this->section_summary_container($thissection);
+            $class = '';
+
+            $sectioncm = $this->courserenderer->course_section_cm_list($course, $thissection, 0);
+
+            echo html_writer::tag('div', $sectionsummary, ['class'=>'course-summary col p-3 bg-light']);
+            echo html_writer::tag('div', $sectioncm, ['class'=>'col-12 '.$class.' px-3 pb-3 bg-light']);
+
+            echo html_writer::end_tag('div');
+
+            echo $this->courserenderer->course_section_add_cm_control($course, 0, 0);
+
+            // Since we are not using ul, replace the /li that
+            // injected_section_footer outputs with /div
+            echo str_replace('</li>', '</div>', $this->injected_section_footer($course, 0, $context, $thissection, false));
+        }
+        // Render as a ul, using css to turn into a responsive grid
+        echo html_writer::start_tag('div', array('class' => 'weeks-holder'));
+        echo html_writer::start_tag('div', array('class' => 'weeks-layout'));
+        echo html_writer::start_tag('h3', array('class' => 'sectionnamex'));
+        echo get_string('weeks', 'format_culcourse');
+        $journalsurl = new moodle_url('/mod/journal/index.php', array('id' => $course->id));
+        echo html_writer::start_tag('span', array('class' => 'pucl-journals-link float-right'));
+        echo html_writer::start_tag('a', array('href' => $journalsurl->out(), 'alt' => get_string('journalslist', 'format_culcourse')));
+        echo html_writer::img($this->output->image_url('JournalWhite', 'format_culcourse'), '');
+        echo html_writer::end_tag('a');
+        echo html_writer::end_tag('span');
+        echo html_writer::end_tag('h3');
+        echo html_writer::start_tag('ul');
+        foreach ($sections as $thissection) {
+            echo $this->section_summary($thissection, $course, null);
+        }
+        echo html_writer::end_tag('ul');
+        echo html_writer::end_tag('div');
+        echo html_writer::end_tag('div');
+        echo $this->end_section_list();
     }
 }

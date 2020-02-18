@@ -239,7 +239,11 @@ class format_culcourse extends format_base {
                 'showsectionsummary' => [
                     'default' => get_config('format_culcourse', 'defaultshowsectionsummary'),
                     'type' => PARAM_INT,
-                ]
+                ],
+		'usepearsoncourseformat' => [
+		    'default' => get_config('format_culcourse', 'defaultusepearsoncourseformat'),
+		    'type' => PARAM_INT,
+		]
             ];
         }
 
@@ -270,7 +274,17 @@ class format_culcourse extends format_base {
                         1 => new lang_string('no'),
                         2 => new lang_string('yes')
                     ]]
-                ]
+                ],
+		'usepearsoncourseformat' => [
+		    'label' => new lang_string('usepearsoncourseformat', 'format_culcourse'),
+		    'help' => 'usepearsoncourseformat',
+		    'help_component' => 'format_culcourse',
+		    'element_type' => 'select',
+		    'element_attributes' => [[
+		        1 => new lang_string('no'),
+			2 => new lang_string('yes')
+		    ]]
+		]
             ];
 
             // Splice in the dashboard edit options.
@@ -326,7 +340,7 @@ class format_culcourse extends format_base {
 
             // Put dashboard settings in own dropdown.
             $dashboardhdr = $mform->addElement('header', 'dashboardhdr', get_string('setdashboardhdr', 'format_culcourse'));
-            array_splice($elements, 4, 0, [$dashboardhdr]);
+            array_splice($elements, 5, 0, [$dashboardhdr]);
         }
 
         $PAGE->requires->js_call_amd('format_culcourse/updatebaseclass', 'init');
